@@ -19,7 +19,8 @@ export default class SignInScreen extends React.Component {
                     <Text style={{ marginTop: 30, marginBottom: 30 }}>
                         ---OR---
                     </Text>
-                    <Button title="Sign up" onPress={this.props.switch("SignUp")} />
+                    {/* <Button title="Sign up" onPress={this.props.switch("SignUp")} /> */}
+                    <Button title="Sign up" onPress={this.props.navigation.navigate("SignUp")} />
                 </View>
             </View>
         )
