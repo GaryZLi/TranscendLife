@@ -3,7 +3,7 @@ import {StyleSheet} from "react-native";
 export default StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: "#fff3e6",
     },
     TitleBarLook: {
         height: Platform.OS === 'ios' ? 110 : 100,
@@ -30,7 +30,29 @@ export default StyleSheet.create({
         marginBottom: 10,
         fontSize: 30,
     },
+    profileText: {
+        textDecorationLine: 'underline',
+        textAlign: 'center',
+        paddingTop: 10,
+        fontSize: 35,
+    },
+    profileView: {
+        textAlign: 'center',
+        display: 'flex',
+        alignItems: 'center',
+        marginTop: 15,
+    },
+    profileCheckListText: {
+        textAlign: "center",
+        fontSize: 30,
+        color: "red",
+        marginTop: 10,
+    },
+    checkList: {
+        marginLeft: 10
+    },
     errorText: {
+        marginTop: 10,
         color: 'red',
         textAlign: 'center',
     },

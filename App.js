@@ -1,5 +1,5 @@
 import React from "react";
-import {View, Keyboard, KeyboardAvoidingView, SafeAreaView} from "react-native";
+import { View, Text } from "react-native";
 import TitleBar from "./src/components/TitleBar";
 import Nav from "./src/components/Navigation";
 import styles from "./src/Styles";
@@ -10,8 +10,8 @@ export default class App extends React.Component {
     return (
       <View style={styles.container}>
         {/* <View style={{display: 'flex'}}> */}
-          <TitleBar/>
-          <Nav/>
+        <TitleBar />
+        <Nav />
         {/* </View> */}
       </View>
     );

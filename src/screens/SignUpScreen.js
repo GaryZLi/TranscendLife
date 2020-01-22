@@ -19,71 +19,52 @@ export default class SignUpScreen extends React.Component {
             errorMsg: "",
         }
     
-        this.handleSubmit = this.handleSubmit.bind(this);
-
-        this.parent = this.parent.bind(this);
-        // this.keyboardDidShow = this.keyboardDidShow.bind(this);
-        // this.keyboardDidHide = this.keyboardDidHide.bind(this);
+        this.handleNext = this.handleNext.bind(this);
     }
 
-    // componentDidMount() {
-    //     this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this.keyboardDidShow);
-    //     this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this.keyboardDidHide);
-    // }
+    async handleNext() {
+        if (this.state.email === "" || this.state.reEmail === "" || this.state.firstName === "" || this.state.lastName === "" || this.state.password === "" || this.state.rePassword === "") {
+            return this.setState({error: true, errorMsg: "Please fill out all fields!"});
+        }
 
-    // componentWillUnmount() {
-    //     this.keyboardDidHideListener.remove();
-    //     this.keyboardDidShowListener.remove();
-    // }
+        if (this.state.email !== this.state.reEmail) {
+            return this.setState({error: true, errorMsg: "Emails do not match!"});
+        }
 
-    // keyboardDidShow() {
-    //     this.setState({paddingBottom: 100})
-    // }
+        if (this.state.password !== this.state.rePassword) {
+            return this.setState({error: true, errorMsg: "Passwords do not match!"});
+        }
 
-    // keyboardDidHide() {
-    //     this.setState({paddingBottom: 0})
-    // }
+        await firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password)
+        .catch(error => {this.setState({error: true, errorMsg: error.code})});
 
-    handleSubmit() {
-        // if (this.state.email === "" || this.state.reEmail === "" || this.state.firstName === "" || this.state.lastName === "" || this.state.password === "" || this.state.rePassword === "") {
-        //     return this.setState({error: true, errorMsg: "Please fill out all fields!"});
-        // }
+        if (this.state.error) {
+            return
+        }
 
-        // if (this.state.email !== this.state.reEmail) {
-        //     return this.setState({error: true, errorMsg: "Emails do not match!"});
-        // }
+        let username = ""
+        for (let i = 0; i < this.state.email.length; i++)
+        {
+            if (this.state.email[i] === '.') {
+                username += "dot";
+            }
+            else {
+                username += this.state.email[i];
+            }
+        }
 
-        // if (this.state.password !== this.state.rePassword) {
-        //     return this.setState({error: true, errorMsg: "Passwords do not match!"});
-        // }
+        this.setState({firstName: this.state.firstName[0].toUpperCase() + this.state.firstName.substr(1)})
+        this.setState({lastName: this.state.lastName[0].toUpperCase() + this.state.lastName.substr(1)})
 
-        // firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password)
-        // .catch(error => {this.setState({error: true, errorMsg: error.code})});
+        const ref = firebase.database().ref("Users/" + username);
+        ref.set({
+            firstName: this.state.firstName,
+            lastName: this.state.lastName,
+        }).catch(error => {this.setState({error: true, errorMsg: error.code})});
 
-        // let username = ""
-        // for (let i = 0; i < this.state.email.length; i++)
-        // {
-        //     if (this.state.email[i] === '.') {
-        //         username += "dot";
-        //     }
-        //     else {
-        //         username += this.state.email[i];
-        //     }
-        // }
-
-        // const ref = firebase.database().ref("Users/" + username);
-        // ref.set({
-        //     firstName: this.state.firstName,
-        //     lastName: this.state.lastName,
-        // }).catch(error => {this.setState({error: true, errorMsg: error.code})});
-
-        this.props.switch("ProfileSetting");
-    }
-
-    parent () {
-        console.log("inparen")
-        this.props.switch("ProfileSetting");
-        console.log("inparentt")
+        if (this.state.error !== true) {
+            return this.props.switch("ProfileSetting");            
+        }
     }
 
     render() {
@@ -98,8 +79,7 @@ export default class SignUpScreen extends React.Component {
                 <TextInput style={styles.inputBoxStyle} placeholder="Re-enter Email" value={this.state.reEmail} onChangeText={(text) => {this.setState({reEmail: text})}}></TextInput>
                 <TextInput style={styles.inputBoxStyle} placeholder="Password" value={this.state.password} onChangeText={(text) => {this.setState({password: text})}}></TextInput>
                 <TextInput style={styles.inputBoxStyle} placeholder="Re-enter Password" value={this.state.rePassword} onChangeText={(text) => {this.setState({rePassword: text})}}></TextInput>
-                {/* <Button title="Sign Up" onPress={this.handleSubmit}/> */}
-                <Button title="Sign Up" onPress={this.props.switch("ProfileSetting")}/>
+                <Button title="Sign Up" onPress={this.handleNext}/>
                 {this.state.error && <Text style={styles.errorText}>{this.state.errorMsg}</Text>}
             </View>
         )

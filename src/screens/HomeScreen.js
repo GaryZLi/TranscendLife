@@ -1,176 +1,29 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
-export default function HomeScreen() {
-    return (
-        <View style={styles.HomeStyle}>
-            <Text>
-                firt
-            </Text>
-            <Text>
-            fdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfdsfds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-            <Text>
-                fds
-            </Text>
-        </View>
-    )
+export default class HomeScreen extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    location () {
+        navigator.geolocation.getCurrentPosition(
+            (position) => console.log("position", position),
+            (error) => console.log("error", error),
+            {
+                enableHighAccuracy: false,
+                maximumAge: 10000,
+                timeout: 8000
+            }
+        )
+    }
+    
+    render() {
+        return (
+            <View style={styles.HomeStyle}>
+               <Text>in homes</Text>
+            </View>
+        )
+    }
 }
 
 const styles = StyleSheet.create({
