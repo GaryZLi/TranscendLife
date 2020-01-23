@@ -48,9 +48,21 @@ export default StyleSheet.create({
         color: "red",
         marginTop: 10,
     },
-    checkList: {
-        marginLeft: 10
+    checkBox: {
+        marginLeft: 10,
+        marginRight: 10,
+        marginTop: 5,
     },
+    // checkList: {
+    //     flex: 1,
+    //     height: 30,
+    //     backgroundColor: "grey",
+    //     borderRadius: 5,
+    //     justifyContent: "center"
+    // },
+    // checkBoxText: {
+    //     color: "white",
+    // },
     errorText: {
         marginTop: 10,
         color: 'red',
@@ -65,5 +77,17 @@ export default StyleSheet.create({
         paddingLeft: 10,
         marginTop: 10,
         marginBottom: 5,
+    },
+    button: {
+        height: 30, 
+        width: 60, 
+        backgroundColor: "#1af", 
+        alignSelf: "center", 
+        justifyContent: "center", 
+        borderRadius: 5
+    },
+    buttonText: {
+        textAlign: "center",
+        color: "white",
     }
 })

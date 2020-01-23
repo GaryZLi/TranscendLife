@@ -1,13 +1,14 @@
 import React from 'react';
-import {ScrollView, Text, TextInput, Button, View, CheckBox} from 'react-native';
+import {ScrollView, Text, TextInput, Button, View, StyleSheet} from 'react-native';
 import styles from "../Styles";
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 export default class ProfileSettingScreen extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            display: "input",
+            display: "Input",
             height: "",
             weight: "",
             dob: "",
@@ -15,6 +16,7 @@ export default class ProfileSettingScreen extends React.Component {
             homeCity: "",
             homeState: "",
             homeCountry: "",
+            preferences: [],
             error: false,
             errorMsg: ""
         }
@@ -23,26 +25,44 @@ export default class ProfileSettingScreen extends React.Component {
     }
 
     handleSubmit(state) {
-        return this.setState({
-            display: "CheckList",
-            height: state.height,
-            weight: state.weight,
-            dob: state.dob,
-            homeStreet: state.homeStreet,
-            homeCity: state.homeCity,
-            homeState: state.homeState,
-            homeCountry: state.homeCountry,
-        })
+        if (this.state.display === "Input") {
+            this.setState({
+                display: "CheckList",
+                height: state.height,
+                weight: state.weight,
+                dob: state.dob,
+                homeStreet: state.homeStreet,
+                homeCity: state.homeCity,
+                homeState: state.homeState,
+                homeCountry: state.homeCountry,
+            })
+        }
+        else {
+            // console.log(state)
+            // console.log(state.checkBoxes.length)
+
+            this.setState((prev) => {
+                console.log(state.checkBoxes.length)
+                for (let i = 0; i < state.checkBoxes.length; i++) {
+                    console.log(i)
+                }
+            })
+
+            return this.props.switch("Home")
+        }
     }
 
     render() {
         let display 
 
-        if (this.state.display === "input") {
+        if (this.state.display === "Input") {
             display = <Input handleSubmit={this.handleSubmit}/>
         }
-        else {
+        else if (this.state.display === "CheckList") {
             display = <CheckList handleSubmit={this.handleSubmit}/>
+        }
+        else {
+            return this.props.switch("Home");
         }
 
         return (
@@ -94,7 +114,8 @@ class Input extends React.Component {
                     <TextInput style={styles.inputBoxStyle} value={this.state.homeState} onChangeText={(text) => this.setState({homeState: text})} placeholder="Home State"/>
                     <TextInput style={styles.inputBoxStyle} value={this.state.homeCountry} onChangeText={(text) => this.setState({homeCountry: text})} placeholder="Home Country"/>
                     <TextInput style={styles.inputBoxStyle} value={this.state.zipCode} onChangeText={(text) => this.setState({zipCode: text})} placeholder="Zip code"/>                    
-                    <Button title="Next" onPress={this.handleNext}/>
+                    {/* <Button title="Next" onPress={this.handleNext}/> */}
+                    <TouchableOpacity style={styles.button} onPress={this.handleNext}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
                     {this.state.error && <Text style={styles.errorText}>{this.state.errorMsg}</Text>}
                 </View>
             </ScrollView>
@@ -109,22 +130,163 @@ class CheckList extends React.Component {
         this.state = {
             checkBoxes: [
                 {
-                    name: "cb1",
+                    id: 0,
                     checked: false,
-                    text: "Weight gain"
-                }
+                    color: "grey",
+                    text: "Pizza",
+                },
+                {
+                    id: 1,
+                    checked: false,
+                    color: "grey",
+                    text: "Chinese",
+                },
+                {
+                    id: 2,
+                    checked: false,
+                    color: "grey",
+                    text: "Mexican",
+                },
+                {
+                    id: 3,
+                    checked: false,
+                    color: "grey",
+                    text: "Thai",
+                },
+                {
+                    id: 4,
+                    checked: false,
+                    color: "grey",
+                    text: "Burgers",
+                },
+                {
+                    id: 5,
+                    checked: false,
+                    color: "grey",
+                    text: "Italian",
+                },
+                {
+                    id: 6,
+                    checked: false,
+                    color: "grey",
+                    text: "Seafood",
+                },
+                {
+                    id: 7,
+                    checked: false,
+                    color: "grey",
+                    text: "Steakhouses",
+                },
+                {
+                    id: 8,
+                    checked: false,
+                    color: "grey",
+                    text: "Korean",
+                },
+                {
+                    id: 9,
+                    checked: false,
+                    color: "grey",
+                    text: "Japanese",
+                },
+                {
+                    id: 10,
+                    checked: false,
+                    color: "grey",
+                    text: "Breakfast",
+                },
+                {
+                    id: 11,
+                    checked: false,
+                    color: "grey",
+                    text: "Sandwiches",
+                },
+                {
+                    id: 12,
+                    checked: false,
+                    color: "grey",
+                    text: "Vietnamese",
+                },
+                {
+                    id: 13,
+                    checked: false,
+                    color: "grey",
+                    text: "Vegetarian",
+                },
+                {
+                    id: 14,
+                    checked: false,
+                    color: "grey",
+                    text: "Sushi Bars",
+                },
+                {
+                    id: 15,
+                    checked: false,
+                    color: "grey",
+                    text: "American",
+                },
             ]
         }
+
+        this.handleCheck = this.handleCheck.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
+
+    handleCheck(num) {
+        this.setState((prev) => {
+            let temp = {
+                checkBoxes: [...prev.checkBoxes]
+            }
+
+            if (temp.checkBoxes[num].color !== "blue") {
+                temp.checkBoxes[num].color = "blue" 
+            }
+            else {
+                temp.checkBoxes[num].color = "grey" 
+            }
+            
+            temp.checkBoxes[num].checked = !temp.checkBoxes[num].checked; 
+            return temp
+        })
+    }
+
+    handleSubmit() {
+        return this.props.handleSubmit(this.state)
+    }
+
     render() {
+        let checkItems = this.state.checkBoxes.map((item) => {return(
+            <View key={item.id} style={styles.checkBox}>
+                <Button title={item.text} color={item.color} onPress={() => this.handleCheck(item.id)}/>
+                {/* <TouchableOpacity key={item.id}  onPress={() => this.handleCheck(item.id)}><Text style={styles.buttonText}>{item.text}</Text></TouchableOpacity> */}
+            </View>
+        )})
+
         return (
             <View>
                 <Text style={styles.profileCheckListText}>
                     Check all that applies.
                 </Text>
-                {/* <CheckBox style={styles.checkList} value={this.state.checkBoxes[0].checked} onChange={this.setState({checkBoxes[0]})}/> */}
-                <Text>{this.state.checkBoxes[0].text}</Text>
+                <ScrollView style={{marginBottom: 70}}>
+                    {checkItems}
+                    <TouchableOpacity style={button.style} onPress={this.handleSubmit}>
+                        <Text style={styles.buttonText}>Submit</Text>
+                    </TouchableOpacity>
+                </ScrollView>
             </View>
         )
     }
 }
+
+const button = StyleSheet.create({
+    style: {
+        height: 30, 
+        width: 60, 
+        backgroundColor: "#1af", 
+        alignSelf: "center", 
+        justifyContent: "center", 
+        borderRadius: 5,
+        marginTop: 5,
+        marginBottom: 100
+    }
+});

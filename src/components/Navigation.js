@@ -11,7 +11,9 @@ export default class Navigation extends React.Component {
         super(props);
 
         this.state = {
-            screen: "SignIn"
+            screen: "SignIn",
+            firstName: "",
+            lastName: "",
         }
 
         this.switch = this.switch.bind(this)

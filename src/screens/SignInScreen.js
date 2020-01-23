@@ -1,8 +1,9 @@
 import React from "react";
-import {View, Text, TextInput, Button, Image} from "react-native";
+import {View, Text, TextInput, Image} from "react-native";
 import styles from "../Styles";
 import logo from "../picSrc/TL.png";
 import firebase from "firebase";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default class SignInScreen extends React.Component {
     constructor(props) {
@@ -62,7 +63,7 @@ export default class SignInScreen extends React.Component {
     // }
 
     handleSignIn() {
-        return this.props.switch("ProfileSetting")
+        this.props.switch("ProfileSetting")
     }
 
     handleSignUp() {
@@ -76,12 +77,12 @@ export default class SignInScreen extends React.Component {
                     <Image source={logo} style={{width: "50%"}}/>
                     <TextInput style={styles.inputBoxStyle} placeholder="email" value={this.state.email} onChangeText={(text) => this.setState({email: text})}/>
                     <TextInput style={styles.inputBoxStyle} placeholder="password" value={this.state.password} onChangeText={(text) => this.setState({password: text})}/>
-                    <Button title="Login" onPress={this.handleSignIn}/>
+                    <TouchableOpacity style={styles.button} onPress={this.handleSignIn}><Text style={styles.buttonText}>Login</Text></TouchableOpacity>
                     {this.state.error && <Text style={styles.errorText}>{this.state.errorMsg}</Text>}
                     <Text style={{ marginTop: 30, marginBottom: 30 }} onPress={this.loc}>
                         ---OR---
                     </Text>
-                    <Button title="Sign up" onPress={this.handleSignUp} />
+                    <TouchableOpacity style={styles.button} onPress={this.handleSignUp}><Text style={styles.buttonText}>Sign Up</Text></TouchableOpacity>
                 </View>
             </View>
         )

@@ -1,8 +1,8 @@
 import React from "react";
-import {Text, TextInput, Button, Keyboard, View} from "react-native";
+import {Text, TextInput, View} from "react-native";
 import styles from "../Styles";
-
 import firebase from "firebase";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default class SignUpScreen extends React.Component {
     constructor(props) {
@@ -79,7 +79,8 @@ export default class SignUpScreen extends React.Component {
                 <TextInput style={styles.inputBoxStyle} placeholder="Re-enter Email" value={this.state.reEmail} onChangeText={(text) => {this.setState({reEmail: text})}}></TextInput>
                 <TextInput style={styles.inputBoxStyle} placeholder="Password" value={this.state.password} onChangeText={(text) => {this.setState({password: text})}}></TextInput>
                 <TextInput style={styles.inputBoxStyle} placeholder="Re-enter Password" value={this.state.rePassword} onChangeText={(text) => {this.setState({rePassword: text})}}></TextInput>
-                <Button title="Sign Up" onPress={this.handleNext}/>
+                {/* <Button title="Sign Up" onPress={() => this.handleNext}/> */}
+                <TouchableOpacity style={styles.button} onPress={this.handleNext}><Text style={styles.buttonText}>Sign Up</Text></TouchableOpacity>
                 {this.state.error && <Text style={styles.errorText}>{this.state.errorMsg}</Text>}
             </View>
         )
