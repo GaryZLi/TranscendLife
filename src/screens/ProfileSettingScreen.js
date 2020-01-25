@@ -2,6 +2,7 @@ import React from 'react';
 import {ScrollView, Text, TextInput, Button, View, StyleSheet} from 'react-native';
 import styles from "../Styles";
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import firebase from "firebase";
 
 export default class ProfileSettingScreen extends React.Component {
     constructor(props) {
@@ -9,44 +10,75 @@ export default class ProfileSettingScreen extends React.Component {
 
         this.state = {
             display: "Input",
-            height: "",
+            heightFt: "",
+            heightIn: "",
             weight: "",
-            dob: "",
-            homeStreet: "",
-            homeCity: "",
-            homeState: "",
-            homeCountry: "",
-            preferences: [],
+            birthMonth: "",
+            birthDay: "",
+            birthYear: "",
+            preferences: [""],
             error: false,
-            errorMsg: ""
+            errorMsg: "",
+            pressed: false,
         }
 
         this.handleSubmit = this.handleSubmit.bind(this)
     }
 
-    handleSubmit(state) {
+    async handleSubmit(state) {
+        if (this.state.pressed === true) {
+            this.setState({error: true, errorMsg: "Please wait."});
+            return
+        }
+
         if (this.state.display === "Input") {
             this.setState({
                 display: "CheckList",
-                height: state.height,
+                heightFt: state.heightFt,
+                heightIn: state.heightIn,
                 weight: state.weight,
-                dob: state.dob,
-                homeStreet: state.homeStreet,
-                homeCity: state.homeCity,
-                homeState: state.homeState,
-                homeCountry: state.homeCountry,
+                birthMonth: state.birthMonth,
+                birthDay: state.birthDay,
+                birthYear: state.birthYear,
             })
         }
         else {
-            // console.log(state)
-            // console.log(state.checkBoxes.length)
-
-            this.setState((prev) => {
-                console.log(state.checkBoxes.length)
-                for (let i = 0; i < state.checkBoxes.length; i++) {
-                    console.log(i)
+            let checked = [];
+            for (let i = 0; i < state.checkBoxes.length; i++) {
+                if (state.checkBoxes[i].color === "blue") {
+                    checked.push(state.checkBoxes[i].text);
                 }
-            })
+            }
+
+            console.log(state)
+
+            this.setState({preferences: checked, pressed: true}, () => {console.log(this.state)});
+            // firebase.database().ref("Users")
+            await firebase.auth().onAuthStateChanged((user) => {
+                let username = user.providerData[0].uid
+                for (let i = 0; i < username.length; i++)
+                {
+                    if (user.providerData[0].uid[i] === '.') {
+                        username += "dot";
+                    }
+                    else {
+                        username += user.providerData[0].uid[i];
+                    }
+                }                
+
+                const {error, errorMsg, ...userProfile} = this.state;
+
+                const ref = firebase.database().ref("Users/" + username)
+                ref.set({
+                    profile: userProfile
+                })
+                .then(function() {
+                    console.log("Updating profile completed.")
+                })
+                .catch(error => {this.setState({error: true, errorMsg: error.code})})
+            });
+
+            this.setState({pressed: false});
 
             return this.props.switch("Home")
         }
@@ -76,13 +108,12 @@ class Input extends React.Component {
         super(props);
 
         this.state = {
-            height: "",
+            heightFt: "",
+            heightIn: "",
             weight: "",
-            dob: "",
-            homeStreet: "",
-            homeCity: "",
-            homeState: "",
-            homeCountry: "",
+            birthMonth: "",
+            birthDay: "",
+            birthYear: "",
             error: false,
             errorMsg: ""
         }
@@ -91,7 +122,7 @@ class Input extends React.Component {
     }
 
     handleNext() {
-        // if (this.state.height === "" || this.state.weight === "" || this.state.dob === "" || this.state.homeStreet === "" || this.state.homeCity === "" || this.state.homeState === "" || this.state.homeCountry === "") {
+        // if (this.state.heightFt === 0 || this.state.heightIn === 0 || this.state.weight === 0 || this.state.birthMonth === 0 || this.state.birthDay === 0 || this.state.birthYear === 0) {
         //     return this.setState({
         //         error: true,
         //         errorMsg: "Please fill out all fields!"
@@ -106,14 +137,12 @@ class Input extends React.Component {
             <ScrollView>
                 <Text style={styles.profileText}>Personal Info</Text>
                 <View style={styles.profileView}>
-                    <TextInput style={styles.inputBoxStyle} value={this.state.height} onChangeText={(text) => this.setState({height: text})} placeholder="Height"/>
-                    <TextInput style={styles.inputBoxStyle} value={this.state.weight} onChangeText={(text) => this.setState({weight: text})} placeholder="Weight"/>
-                    <TextInput style={styles.inputBoxStyle} value={this.state.dob} onChangeText={(text) => this.setState({dob: text})} placeholder="Date of Birth mm/dd/yyyy"/>
-                    <TextInput style={styles.inputBoxStyle} value={this.state.homeAddr} onChangeText={(text) => this.setState({homeStreet: text})} placeholder="Home Street Address"/>
-                    <TextInput style={styles.inputBoxStyle} value={this.state.homeCity} onChangeText={(text) => this.setState({homeCity: text})} placeholder="Home City"/>
-                    <TextInput style={styles.inputBoxStyle} value={this.state.homeState} onChangeText={(text) => this.setState({homeState: text})} placeholder="Home State"/>
-                    <TextInput style={styles.inputBoxStyle} value={this.state.homeCountry} onChangeText={(text) => this.setState({homeCountry: text})} placeholder="Home Country"/>
-                    <TextInput style={styles.inputBoxStyle} value={this.state.zipCode} onChangeText={(text) => this.setState({zipCode: text})} placeholder="Zip code"/>                    
+                    <TextInput style={styles.inputBoxStyle} value={this.state.heightFt} onChangeText={(text) => this.setState({heightFt: text})} placeholder="Height in Feet"/>
+                    <TextInput style={styles.inputBoxStyle} value={this.state.heightIn} onChangeText={(text) => this.setState({heightIn: text})} placeholder="Height in Inches"/>
+                    <TextInput style={styles.inputBoxStyle} value={this.state.weight} onChangeText={(text) => this.setState({weight: text})} placeholder="Weight in Pounds"/>
+                    <TextInput style={styles.inputBoxStyle} value={this.state.birthMonth} onChangeText={(text) => this.setState({birthMonth: text})} placeholder="Birth Month mm"/>
+                    <TextInput style={styles.inputBoxStyle} value={this.state.birthDay} onChangeText={(text) => this.setState({birthDay: text})} placeholder="Birth Day dd"/>
+                    <TextInput style={styles.inputBoxStyle} value={this.state.birthYear} onChangeText={(text) => this.setState({birthYear: text})} placeholder="Birth Year yyyy"/>
                     {/* <Button title="Next" onPress={this.handleNext}/> */}
                     <TouchableOpacity style={styles.button} onPress={this.handleNext}><Text style={styles.buttonText}>Next</Text></TouchableOpacity>
                     {this.state.error && <Text style={styles.errorText}>{this.state.errorMsg}</Text>}

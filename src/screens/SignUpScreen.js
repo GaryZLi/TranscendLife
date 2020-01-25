@@ -35,7 +35,7 @@ export default class SignUpScreen extends React.Component {
             return this.setState({error: true, errorMsg: "Passwords do not match!"});
         }
 
-        await firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password)
+        await firebase.auth().createUserWithEmailAndPassword(this.state.email.replace(/\s/g, '').toLowerCase(), this.state.password)
         .catch(error => {this.setState({error: true, errorMsg: error.code})});
 
         if (this.state.error) {
@@ -53,8 +53,9 @@ export default class SignUpScreen extends React.Component {
             }
         }
 
-        this.setState({firstName: this.state.firstName[0].toUpperCase() + this.state.firstName.substr(1)})
-        this.setState({lastName: this.state.lastName[0].toUpperCase() + this.state.lastName.substr(1)})
+        this.setState({
+            firstName: this.state.firstName[0].toUpperCase() + this.state.firstName.substr(1), 
+            lastName: this.state.lastName[0].toUpperCase() + this.state.lastName.substr(1)})
 
         const ref = firebase.database().ref("Users/" + username);
         ref.set({

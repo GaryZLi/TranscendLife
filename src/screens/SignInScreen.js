@@ -13,58 +13,74 @@ export default class SignInScreen extends React.Component {
             email: "",
             password: "",
             error: false,
-            errorMsg: ""
+            errorMsg: "",
+            pressed: false,
         }
         
         this.handleSignIn = this.handleSignIn.bind(this);
         this.handleSignUp = this.handleSignUp.bind(this);
     }
 
-    // async handleSignIn() {
-    //     if (this.state.email === "" || this.state.password === "") {
-    //         return this.setState({error: true, errorMsg: "Please fill out all fields!"})
-    //     }
+    async handleSignIn() {
+        if (this.state.pressed) {
+            return
+        }
+        
+        if (this.state.email === "" || this.state.password === "") {
+            return this.setState({error: true, errorMsg: "Please fill out all fields!"})
+        }
 
-    //     await firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password).catch(async error => this.setState({error: true, errorMsg: error.code}))
-    //     console.log("trying", this.state.errorMsg)
-    //     if (this.state.error) {
-    //         return
-    //     }
+        this.setState({pressed: true});
 
-    //     let username = ""
-    //     for (let i = 0; i < this.state.email.length; i++)
-    //     {
-    //         if (this.state.email[i] === '.') {
-    //             username += "dot";
-    //         }
-    //         else {
-    //             username += this.state.email[i];
-    //         }
-    //     }
+        await firebase.auth().signInWithEmailAndPassword(this.state.email.replace(/\s/g, ''), this.state.password).catch(async error => this.setState({error: true, errorMsg: error.code}))
 
-    //     let screen 
-    //     const ref = firebase.database().ref("Users/" + username);
-    //     ref.once("value", function(snapshot) {
-    //         if (snapshot.hasChild("profile")) {
-    //             screen = "Home";
-                
-    //         }
-    //         else {
-    //             screen = "ProfileSetting"
-    //         }
-    //     })        
+        if (this.state.error) {
+            return
+        }
 
-    //     if (screen === "Home") {
-    //         return this.props.switch("Home")
-    //     }
-    //     else {
-    //         return this.props.switch("ProfileSetting")
-    //     }        
-    // }
+        let username = ""
+        for (let i = 0; i < this.state.email.length; i++)
+        {
+            if (this.state.email[i] === '.') {
+                username += "dot";
+            }
+            else {
+                username += this.state.email[i];
+            }
+        }
 
-    handleSignIn() {
-        this.props.switch("ProfileSetting")
+        username = username.toLowerCase();
+
+        let screen 
+        const ref = firebase.database().ref("Users/" + username + "/");
+        // ref.once("value", function(snapshot) {
+        //     if (snapshot.hasChild("profile")) {
+        //         screen = "Home";
+        //     }
+        //     else {
+        //         screen = "ProfileSetting"
+        //     }
+        //     console.log("inhere:", snapshot.hasChildren(), ref)
+        // })        
+        ref.once("value")
+        .then(function(snapshot) {
+            console.log(snapshot.child("profile").exists())
+        })
+
+        this.setState((prev) => ({pressed: false}));
+
+        if (screen === "Home") {
+            return this.props.switch("Home")
+        }
+        else {
+            return this.props.switch("ProfileSetting")
+        }        
     }
+
+    // // delete after !!------------------------
+    // handleSignIn() {
+    //     this.props.switch("ProfileSetting")
+    // }
 
     handleSignUp() {
         this.props.switch("SignUp")
