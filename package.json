@@ -8,8 +8,10 @@
   },
   "dependencies": {
     "@react-native-community/masked-view": "^0.1.6",
+    "axios": "^0.19.2",
     "expo": "~36.0.0",
     "firebase": "^7.7.0",
+    "http": "0.0.0",
     "react": "~16.9.0",
     "react-dom": "~16.9.0",
     "react-native": "~0.61.4",
@@ -20,7 +22,9 @@
     "react-native-unimodules": "~0.7.0",
     "react-native-web": "~0.11.7",
     "react-navigation": "^4.0.10",
-    "react-navigation-stack": "^2.0.15"
+    "react-navigation-stack": "^2.0.15",
+    "url": "^0.11.0",
+    "yelp-fusion": "^3.0.0"
   },
   "devDependencies": {
     "@babel/core": "~7.6.0",

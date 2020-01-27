@@ -1,9 +1,55 @@
 import React from "react";
-import {View, Text, TextInput, Image} from "react-native";
+import {View, Text, TextInput, Image, Keyboard, TouchableWithoutFeedback} from "react-native";
 import styles from "../Styles";
 import logo from "../picSrc/TL.png";
 import firebase from "firebase";
 import { TouchableOpacity } from "react-native-gesture-handler";
+
+import {Platform, InteractionManager} from 'react-native';
+
+const _setTimeout = global.setTimeout;
+const _clearTimeout = global.clearTimeout;
+const MAX_TIMER_DURATION_MS = 60 * 1000;
+if (Platform.OS === 'android') {
+// Work around issue `Setting a timer for long time`
+// see: https://github.com/firebase/firebase-js-sdk/issues/97
+    const timerFix = {};
+    const runTask = (id, fn, ttl, args) => {
+        const waitingTime = ttl - Date.now();
+        if (waitingTime <= 1) {
+            InteractionManager.runAfterInteractions(() => {
+                if (!timerFix[id]) {
+                    return;
+                }
+                delete timerFix[id];
+                fn(...args);
+            });
+            return;
+        }
+
+        const afterTime = Math.min(waitingTime, MAX_TIMER_DURATION_MS);
+        timerFix[id] = _setTimeout(() => runTask(id, fn, ttl, args), afterTime);
+    };
+
+    global.setTimeout = (fn, time, ...args) => {
+        if (MAX_TIMER_DURATION_MS < time) {
+            const ttl = Date.now() + time;
+            const id = '_lt_' + Object.keys(timerFix).length;
+            runTask(id, fn, ttl, args);
+            return id;
+        }
+        return _setTimeout(fn, time, ...args);
+    };
+
+    global.clearTimeout = id => {
+        if (typeof id === 'string' && id.startWith('_lt_')) {
+            _clearTimeout(timerFix[id]);
+            delete timerFix[id];
+            return;
+        }
+        _clearTimeout(id);
+    };
+}
 
 export default class SignInScreen extends React.Component {
     constructor(props) {
@@ -15,6 +61,7 @@ export default class SignInScreen extends React.Component {
             error: false,
             errorMsg: "",
             pressed: false,
+            screen: "PreferenceScreen"
         }
         
         this.handleSignIn = this.handleSignIn.bind(this);
@@ -22,6 +69,7 @@ export default class SignInScreen extends React.Component {
     }
 
     async handleSignIn() {
+        // deny user to spam the Sign In button
         if (this.state.pressed) {
             return
         }
@@ -30,56 +78,40 @@ export default class SignInScreen extends React.Component {
             return this.setState({error: true, errorMsg: "Please fill out all fields!"})
         }
 
+        // reset the user's press of the Sign In button
         this.setState({pressed: true});
 
-        await firebase.auth().signInWithEmailAndPassword(this.state.email.replace(/\s/g, ''), this.state.password).catch(async error => this.setState({error: true, errorMsg: error.code}))
+        // authenticate the user to log in
+        let email = this.state.email.replace(/\s/g, '').toLowerCase();
+        
+        await firebase.auth().signInWithEmailAndPassword(email, this.state.password)
+        .then(this.setState({pressed: false}))
+        .catch(error => this.setState({error: true, errorMsg: error.code, pressed: false}));
 
         if (this.state.error) {
             return
         }
 
-        let username = ""
-        for (let i = 0; i < this.state.email.length; i++)
-        {
-            if (this.state.email[i] === '.') {
-                username += "dot";
-            }
-            else {
-                username += this.state.email[i];
-            }
-        }
+        // replace the email's '.' with "dot" to use to fetch profile
+        let username = this.state.email.replace(/\./g, "dot").toLowerCase();
 
-        username = username.toLowerCase();
-
-        let screen 
-        const ref = firebase.database().ref("Users/" + username + "/");
-        // ref.once("value", function(snapshot) {
-        //     if (snapshot.hasChild("profile")) {
-        //         screen = "Home";
-        //     }
-        //     else {
-        //         screen = "ProfileSetting"
-        //     }
-        //     console.log("inhere:", snapshot.hasChildren(), ref)
-        // })        
-        ref.once("value")
-        .then(function(snapshot) {
-            console.log(snapshot.child("profile").exists())
+        // check whether the user has already set a preference or not
+        const ref = firebase.database().ref("Users/" + username.replace(/\"/g, '').replace(/\s/g, '') + "/");
+        await ref.once("value", (snapshot) => {
+            if (snapshot.child("preferences").exists()) {
+                this.setState({screen: "Home"})
+            }
         })
+        .catch(error => {this.setState({error: true, errorMsg: error.code})})
 
-        this.setState((prev) => ({pressed: false}));
-
-        if (screen === "Home") {
-            return this.props.switch("Home")
-        }
-        else {
-            return this.props.switch("ProfileSetting")
-        }        
+        // change to the appropriate screen
+        return this.props.switch(this.state.screen);     
     }
 
-    // // delete after !!------------------------
+
+    // // // delete when done!!!!!!!!!!!!!
     // handleSignIn() {
-    //     this.props.switch("ProfileSetting")
+    //     return this.props.switch("Home")
     // }
 
     handleSignUp() {
@@ -88,19 +120,19 @@ export default class SignInScreen extends React.Component {
     
     render() {
         return (
-            <View style={{ textAlign: 'center' }}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={{ alignItems: 'center' }}>
                     <Image source={logo} style={{width: "50%"}}/>
-                    <TextInput style={styles.inputBoxStyle} placeholder="email" value={this.state.email} onChangeText={(text) => this.setState({email: text})}/>
-                    <TextInput style={styles.inputBoxStyle} placeholder="password" value={this.state.password} onChangeText={(text) => this.setState({password: text})}/>
-                    <TouchableOpacity style={styles.button} onPress={this.handleSignIn}><Text style={styles.buttonText}>Login</Text></TouchableOpacity>
+                    <TextInput style={styles.inputBoxStyle} placeholder="email" placeholderTextColor="#706f6e" value={this.state.email} onChangeText={(text) => this.setState({email: text})} onSubmitEditing={() => this.passwordInput.focus()}/>
+                    <TextInput style={styles.inputBoxStyle} placeholder="password" placeholderTextColor="#706f6e" value={this.state.password} onChangeText={(text) => this.setState({password: text})} ref={input => {this.passwordInput = input}} onSubmitEditing={() => this.handleSignIn()} autoCapitalize="none"/>
+                    <TouchableOpacity style={styles.button} onPress={() => this.handleSignIn()}><Text style={styles.buttonText}>Login</Text></TouchableOpacity>
                     {this.state.error && <Text style={styles.errorText}>{this.state.errorMsg}</Text>}
                     <Text style={{ marginTop: 30, marginBottom: 30 }} onPress={this.loc}>
                         ---OR---
                     </Text>
                     <TouchableOpacity style={styles.button} onPress={this.handleSignUp}><Text style={styles.buttonText}>Sign Up</Text></TouchableOpacity>
                 </View>
-            </View>
+            </TouchableWithoutFeedback>
         )
     }
 }
