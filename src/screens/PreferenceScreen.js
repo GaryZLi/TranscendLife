@@ -31,7 +31,8 @@ export default class PreferenceScreen extends React.Component {
         // reference to the username, then add the user's preferences
         const username = firebase.auth().currentUser.email.replace(/\./g, "dot").replace(/\"/g, '');
         const ref = firebase.database().ref("Users/" + username)
-        ref.update({preferences: this.state.preferences})
+        // ref.update({preferences: this.state.preferences})
+        ref.update({preferences: checked})
         .then(this.props.switch("Home"))
         .catch(error => this.setState({error: true, errorMsg: error.code}));
     }
@@ -147,6 +148,12 @@ class PreferenceList extends React.Component {
                     checked: false,
                     color: "grey",
                     text: "American",
+                },
+                {
+                    id: 16,
+                    checked: false,
+                    color: "grey",
+                    text: "Vegan",
                 },
             ]
         }

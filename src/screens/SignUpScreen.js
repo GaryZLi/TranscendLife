@@ -68,13 +68,10 @@ export default class SignUpScreen extends React.Component {
         await ref.set({
             firstName: this.state.firstName,
             lastName: this.state.lastName,
-            distance: {radius: 10, averageDistance: 0, total: 0}
+            recommend: {radius: 10000, averageDistance: 0, averagePrice: 0, averageRating: 0, total: 0}
         })
         .then(this.props.switch("PreferenceScreen"))
         .catch(error => {this.setState({error: true, errorMsg: error.code})});
-
-
-        
     }
 
     render() {

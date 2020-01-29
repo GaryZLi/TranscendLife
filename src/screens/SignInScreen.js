@@ -58,38 +58,45 @@ export default class SignInScreen extends React.Component {
         this.state = {
             email: "",
             password: "",
+            screen: "PreferenceScreen",
             error: false,
             errorMsg: "",
-            pressed: false,
-            screen: "PreferenceScreen"
+            // pressed: false,
         }
         
         this.handleSignIn = this.handleSignIn.bind(this);
         this.handleSignUp = this.handleSignUp.bind(this);
+        this.pressed = false;
+
     }
 
     async handleSignIn() {
         // deny user to spam the Sign In button
-        if (this.state.pressed) {
-            return
-        }
+        // if (this.stateS.pressed) {
+        //     return//
+        // }
+        // if (this.pressed) {
+        //     return console.log("pressed already")
+        // }
         
         if (this.state.email === "" || this.state.password === "") {
             return this.setState({error: true, errorMsg: "Please fill out all fields!"})
         }
 
         // reset the user's press of the Sign In button
-        this.setState({pressed: true});
+        // this.setState({pressed: true});
+        this.pressed = true;
 
         // authenticate the user to log in
         let email = this.state.email.replace(/\s/g, '').toLowerCase();
         
         await firebase.auth().signInWithEmailAndPassword(email, this.state.password)
-        .then(this.setState({pressed: false}))
-        .catch(error => this.setState({error: true, errorMsg: error.code, pressed: false}));
+        // .then(this.setState({pressed: false}))
+        .catch(error => this.setState({error: true, errorMsg: error.code}), this.pressed = false);
 
         if (this.state.error) {
-            return
+            // this.pressed = false;
+            return 
         }
 
         // replace the email's '.' with "dot" to use to fetch profile

@@ -83,7 +83,7 @@ class SideBarMenu extends React.Component {
         this.state = {
             user: "",
             searchQuery: "",
-            chosen: 10,
+            chosen: 0,
             // profileSetting: false,
             // preferences: false,
             error: false,
@@ -126,10 +126,10 @@ class SideBarMenu extends React.Component {
                 </View>
                 <TouchableOpacity style={styles.searchButton} onPress={this.search}><Text style={{color: "white"}}>Search</Text></TouchableOpacity>
                 <View style={styles.distanceBox}>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 10 && styles.distanceChosen]} onPress={() => this.changeDistance(10)}><Text>10 km</Text></TouchableOpacity>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 20 && styles.distanceChosen]} onPress={() => this.changeDistance(20)}><Text>20 km</Text></TouchableOpacity>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 50 && styles.distanceChosen]} onPress={() => this.changeDistance(50)}><Text>50 km</Text></TouchableOpacity>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 100 && styles.distanceChosen]} onPress={() => this.changeDistance(100)}><Text>100 km</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 10000 && styles.distanceChosen]} onPress={() => this.changeDistance(10000)}><Text>10 km</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 20000 && styles.distanceChosen]} onPress={() => this.changeDistance(20000)}><Text>20 km</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 30000 && styles.distanceChosen]} onPress={() => this.changeDistance(30000)}><Text>30 km</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 40000 && styles.distanceChosen]} onPress={() => this.changeDistance(40000)}><Text>40 km</Text></TouchableOpacity>
                 </View>
                 <View style={styles.sideBarOptions}>
                     <ProfileSettingView/>

@@ -49,7 +49,7 @@ export default StyleSheet.create({
         fontSize: 0.06 * Dimensions.get("window").width,
     },
     homeView: {
-        height: "60%",
+        height: "70%",
         marginTop: 10,
     },
     suggestedView: {
