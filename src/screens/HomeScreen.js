@@ -6,6 +6,7 @@ import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import {apiKey} from "../Yelp";
 import axios from "axios"
 import firebase from "firebase";
+import { max } from 'react-native-reanimated';
 
 export default class HomeScreen extends React.Component {
     constructor(props) {
@@ -26,7 +27,7 @@ export default class HomeScreen extends React.Component {
         this.getHour = this.getHour.bind(this);
         this.getFood = this.getFood.bind(this);
     }
-
+expo 
     componentDidMount() {
         this.interval = setInterval(() => this.getHour(), 1000);
         this.getUserInfo();
@@ -91,7 +92,7 @@ export default class HomeScreen extends React.Component {
                 }
 
                 axios.get("https://api.yelp.com/v3/businesses/search", config)
-                .then((results) => this.getFood(results.data.businesses)) // this is an array of objects
+                .then((results) => this.getFood(results.data.businesses)) 
                 .catch((error) => this.setState({error: true, errorMsg: error.code}))
             },
             (error) => this.setState({error: true, errorMsg: error.code}),
@@ -163,7 +164,26 @@ export default class HomeScreen extends React.Component {
         return array
     }
 
-    getFood(businesses) {   
+    sortResults(array, size) {
+        let smallest; 
+        let temp;
+
+        for (let i = 0; i < size - 1; i++) {
+            smallest = i;
+            for (let j = i + 1; j < size; j++) {
+                if (array[j][1] < array[smallest][1]) {
+                    smallest = j;
+                }
+            }
+            temp = array[i];
+            array[i] = array[smallest];
+            array[smallest] = temp;
+        }
+
+        return array
+    }
+
+    getFood(businesses) {        
         let storedBusinesses = []
         let data = {}
 
@@ -183,20 +203,38 @@ export default class HomeScreen extends React.Component {
             storedBusinesses.push(data)
         }
 
-
         let getSortedDistance = this.sortDistance(storedBusinesses, storedBusinesses.length);
         let getSortedRating = this.sortRating(storedBusinesses, storedBusinesses.length);
         let getSortedPrice = this.sortPrice(storedBusinesses, storedBusinesses.length);
 
-        let results = {}
-        results[getSortedPrice[0].name] = 0;
+        let results = {};
+        let maxPoints = getSortedDistance.length;
 
-        console.log(results[getSortedPrice[0].name])
+        for (let i = 0; i < getSortedDistance.length; i++) {
+            
+            results[getSortedDistance[i].name] = 0
+        }
+
+        for (let i = 0; i < getSortedDistance.length; i++) {
+            results[getSortedDistance[i].name] += maxPoints; 
+            results[getSortedRating[i].name] +=  maxPoints;
+            results[getSortedPrice[i].name] +=  maxPoints;
+            maxPoints -= 1;
+        }
+
+        let resultsArr = [];
+
+        for (let i in results) {
+            resultsArr.push([i, results[i]])
+        }
+
+        this.sortResults(resultsArr, resultsArr.length);
+
+        console.log(resultsArr)
 
 
 
-        // console.log(getSortedDistance);
-
+        //this.user.data
         // Object {
         //     "averageDistance": 0,
         //     "averagePrice": 0,

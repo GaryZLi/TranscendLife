@@ -2,8 +2,8 @@
   "devToolsPort": 19002,
   "expoServerPort": 19000,
   "packagerPort": 19001,
-  "packagerPid": 5512,
-  "expoServerNgrokUrl": "https://sx-kqd.anonymous.transcendlife.exp.direct",
-  "packagerNgrokUrl": "https://packager.sx-kqd.anonymous.transcendlife.exp.direct",
-  "ngrokPid": 15736
+  "packagerPid": 1100,
+  "expoServerNgrokUrl": null,
+  "packagerNgrokUrl": null,
+  "ngrokPid": null
 }
