@@ -6,7 +6,6 @@ import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import {apiKey} from "../Yelp";
 import axios from "axios"
 import firebase from "firebase";
-import { max } from 'react-native-reanimated';
 
 export default class HomeScreen extends React.Component {
     constructor(props) {
@@ -27,7 +26,7 @@ export default class HomeScreen extends React.Component {
         this.getHour = this.getHour.bind(this);
         this.getFood = this.getFood.bind(this);
     }
-expo 
+
     componentDidMount() {
         this.interval = setInterval(() => this.getHour(), 1000);
         this.getUserInfo();
@@ -104,83 +103,99 @@ expo
         )
     }
 
-    sortDistance(tempArr, size) {      
-        let array = tempArr.slice(0);
-        let smallest; 
+    partition(array, start, end, type) {
+        let index = start - 1;
         let temp;
 
-        for (let i = 0; i < size - 1; i++) {
-            smallest = i;
-            for (let j = i + 1; j < size; j++) {
-                if (array[j].distance < array[smallest].distance) {
-                    smallest = j;
+        if (type === "distance") {
+            let pivot = array[end].distance;
+
+            for (let i = start; i < end; i++) {
+                if (array[i].distance < pivot) {
+                    index++;
+                    temp = array[i];
+                    array[i] = array[index];
+                    array[index] = temp;
                 }
             }
-            temp = array[i];
-            array[i] = array[smallest];
-            array[smallest] = temp;
+        }
+        else if (type === "rating") {
+            let pivot = array[end].rating;
+
+            for (let i = start; i < end; i++) {
+                if (array[i].rating > pivot) {
+                    index++;
+                    temp = array[i];
+                    array[i] = array[index];
+                    array[index] = temp;
+                }
+            }
+        }
+        else if (type === "price") {
+            let pivot = array[end].price;
+
+            for (let i = start; i < end; i++) {
+                if (array[i].price < pivot) {
+                    index++;
+                    temp = array[i];
+                    array[i] = array[index];
+                    array[index] = temp;
+                }
+            }
+        }
+        else {
+            let pivot = array[end][1];
+
+            for (let i = start; i < end; i++) {
+                if (array[i][1] > pivot) {
+                    index++;
+                    temp = array[i];
+                    array[i] = array[index];
+                    array[index] = temp;
+                }
+            }
         }
 
-        return array
+        index++;
+        temp = array[index];
+        array[index] = array[end];
+        array[end] = temp;
+        return index;
+    }
+    
+    // quicksort with end as the last index
+    sort(array, start, end, type) {
+        if (start < end) {
+            let index = this.partition(array, start, end, type);
+
+            this.sort(array, start, index-1, type);
+            this.sort(array, index+1, end, type);
+        } 
+
+        return array;
     }
 
-    sortRating(tempArr, size) {
-        let array = tempArr.slice(0);
-        let biggest; 
-        let temp;
+    // add preferences to ranking
+    getRanking(distance, rating, price) {
+        let map = {}
+        let results = [];
+        let maxPoints = distance.length;
 
-        for (let i = 0; i < size - 1; i++) {
-            biggest = i;
-            for (let j = i + 1; j < size; j++) {
-                if (array[j].rating > array[biggest].rating) {
-                    biggest = j;
-                }
-            }
-            temp = array[i];
-            array[i] = array[biggest];
-            array[biggest] = temp;
-        }
-        
-        return array
-    }
-
-    sortPrice(tempArr, size) {
-        let array = tempArr.slice(0);
-        let smallest; 
-        let temp;
-
-        for (let i = 0; i < size - 1; i++) {
-            smallest = i;
-            for (let j = i + 1; j < size; j++) {
-                if (array[j].price < array[smallest].price) {
-                    smallest = j;
-                }
-            }
-            temp = array[i];
-            array[i] = array[smallest];
-            array[smallest] = temp;
+        for (let i = 0; i < distance.length; i++) {
+            results.push([distance[i], 0]);
+            map[distance[i].name] = i;
         }
 
-        return array
-    }
-
-    sortResults(array, size) {
-        let smallest; 
-        let temp;
-
-        for (let i = 0; i < size - 1; i++) {
-            smallest = i;
-            for (let j = i + 1; j < size; j++) {
-                if (array[j][1] < array[smallest][1]) {
-                    smallest = j;
-                }
-            }
-            temp = array[i];
-            array[i] = array[smallest];
-            array[smallest] = temp;
+        for (let i = 0; i < distance.length; i++) {
+            results[map[distance[i].name]][1] += maxPoints; 
+            results[map[rating[i].name]][1] +=  maxPoints;
+            results[map[price[i].name]][1] +=  maxPoints;
+            maxPoints -= 1;
         }
 
-        return array
+        this.sort(results, 0, results.length-1, "ranking");
+
+        return results;
     }
 
     getFood(businesses) {        
@@ -203,54 +218,50 @@ expo
             storedBusinesses.push(data)
         }
 
-        let getSortedDistance = this.sortDistance(storedBusinesses, storedBusinesses.length);
-        let getSortedRating = this.sortRating(storedBusinesses, storedBusinesses.length);
-        let getSortedPrice = this.sortPrice(storedBusinesses, storedBusinesses.length);
+        let sortedDistance, sortedRating, sortedPrice;
+        sortedDistance = storedBusinesses.slice(0);
+        sortedRating = storedBusinesses.slice(0);
+        sortedPrice = storedBusinesses.slice(0);
 
-        let results = {};
-        let maxPoints = getSortedDistance.length;
-
-        for (let i = 0; i < getSortedDistance.length; i++) {
-            
-            results[getSortedDistance[i].name] = 0
-        }
-
-        for (let i = 0; i < getSortedDistance.length; i++) {
-            results[getSortedDistance[i].name] += maxPoints; 
-            results[getSortedRating[i].name] +=  maxPoints;
-            results[getSortedPrice[i].name] +=  maxPoints;
-            maxPoints -= 1;
-        }
-
-        let resultsArr = [];
-
-        for (let i in results) {
-            resultsArr.push([i, results[i]])
-        }
-
-        this.sortResults(resultsArr, resultsArr.length);
-
-        console.log(resultsArr)
+        sortedDistance = this.sort(sortedDistance, 0, sortedDistance.length-1, "distance");
+        sortedRating = this.sort(sortedRating, 0, sortedRating.length-1, "rating");
+        sortedPrice = this.sort(sortedPrice, 0, sortedPrice.length-1, "price");
 
 
+        // storedBusinesses = this.getRanking(sortedDistance, sortedRating, sortedPrice);
 
-        //this.user.data
-        // Object {
-        //     "averageDistance": 0,
-        //     "averagePrice": 0,
-        //     "averageRating": 0,
-        //     "radius": 10000,
-        //     "total": 0,
-        // }
+        // console.log(storedBusinesses[0][1]);
+        this.setState({businesses: this.getRanking(sortedDistance, sortedRating, sortedPrice).slice(0,5)});
+
     }
 
     render() {
+        let display = this.state.businesses.map(business => {return (
+            <View style={styles.suggestedView}>
+                <Text>
+                    Name: {business[0].name}
+                </Text>
+                <Text>
+                    Distance: {business[0].distance}
+                </Text>
+                <Text>
+                    Rating: {business[0].rating} 
+                </Text>
+                <Text>
+                    Price: {business[0].price}
+                </Text>
+                <Text>
+                    Address: {business[0].display_address}
+                </Text>
+            </View>
+        )})
         return (
             <View>
                 <SideBar switch={this.props.switch} timeOfDay={this.state.timeOfDay} search={this.handleSearch} />
                 <Text style={styles.mealText}>{this.state.mealText}</Text>
                 <ScrollView style={styles.homeView}>
-                    <View style={styles.suggestedView}>
+                    {display}
+                    {/* <View style={styles.suggestedView}>
                         <Text>
                             resta name, phone numba, pic?, once clicked maybe show a guidance route, mmmm maybe add weather to see if ice cream, soup, etc is suitable for the weather
                         </Text>
@@ -279,7 +290,7 @@ expo
                         <Text>
                             Here's the pick for you today
                         </Text>
-                    </View>
+                    </View> */}
                 </ScrollView>
                 <TouchableOpacity style={styles.chooseButton}><Text style={{ color: "white" }}>Choose</Text></TouchableOpacity>
                 {this.state.error && <Text style={styles.errorText}>{this.state.errorMsg}</Text>}

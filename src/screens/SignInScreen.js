@@ -61,31 +61,30 @@ export default class SignInScreen extends React.Component {
             screen: "PreferenceScreen",
             error: false,
             errorMsg: "",
-            // pressed: false,
         }
         
         this.handleSignIn = this.handleSignIn.bind(this);
         this.handleSignUp = this.handleSignUp.bind(this);
         this.pressed = false;
-
     }
 
+    // fix sign in to be synchronous!!!
     async handleSignIn() {
+        this.setState({error: false, errorMsg: ""}, () => console.log("Attemping to sign in..."))
         // deny user to spam the Sign In button
-        // if (this.stateS.pressed) {
-        //     return//
-        // }
-        // if (this.pressed) {
-        //     return console.log("pressed already")
-        // }
+        if (this.pressed) {
+            return 
+        }
+
         
         if (this.state.email === "" || this.state.password === "") {
             return this.setState({error: true, errorMsg: "Please fill out all fields!"})
         }
 
-        // reset the user's press of the Sign In button
-        // this.setState({pressed: true});
+        // prevent the user from spamming sign in
         this.pressed = true;
+
+        console.log("Signing in")
 
         // authenticate the user to log in
         let email = this.state.email.replace(/\s/g, '').toLowerCase();
@@ -95,7 +94,6 @@ export default class SignInScreen extends React.Component {
         .catch(error => this.setState({error: true, errorMsg: error.code}), this.pressed = false);
 
         if (this.state.error) {
-            // this.pressed = false;
             return 
         }
 
@@ -110,6 +108,13 @@ export default class SignInScreen extends React.Component {
             }
         })
         .catch(error => {this.setState({error: true, errorMsg: error.code})})
+
+        if (this.state.error) {
+            this.pressed = false;
+            return 
+        }
+
+        // this.pressed = false;
 
         // change to the appropriate screen
         return this.props.switch(this.state.screen);     
@@ -137,7 +142,7 @@ export default class SignInScreen extends React.Component {
                     <Text style={{ marginTop: 30, marginBottom: 30 }} onPress={this.loc}>
                         ---OR---
                     </Text>
-                    <TouchableOpacity style={styles.button} onPress={this.handleSignUp}><Text style={styles.buttonText}>Sign Up</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={() => this.handleSignUp()}><Text style={styles.buttonText}>Sign Up</Text></TouchableOpacity>
                 </View>
             </TouchableWithoutFeedback>
         )
