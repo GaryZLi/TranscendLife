@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, Image, Linking} from 'react-native';
 import styles from "../Styles";
 import SideBar from "../components/SideBar";
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
@@ -16,6 +16,7 @@ export default class HomeScreen extends React.Component {
             mealText: "",
             userData: {},
             businesses: [],
+            chosen: "",
             username: "",
             error: false,
             errorMsg: "",
@@ -25,16 +26,20 @@ export default class HomeScreen extends React.Component {
         this.defineParameters = this.defineParameters.bind(this);
         this.getHour = this.getHour.bind(this);
         this.getFood = this.getFood.bind(this);
+        this.handleConfirm = this.handleConfirm.bind(this);
     }
 
     componentDidMount() {
-        this.interval = setInterval(() => this.getHour(), 1000);
+        // this.interval = setInterval(() => this.getHour(), 1000);
+
+
+        this.getHour()
         this.getUserInfo();
     }
 
-    componentWillUnmount() {
-        clearInterval(this.interval);
-    }
+    // componentWillUnmount() {
+    //     clearInterval(this.interval);
+    // }
 
     async getUserInfo() {
         let username = firebase.auth().currentUser.email.replace(/\./g, "dot").replace(/\-/g, "dash")
@@ -96,7 +101,7 @@ export default class HomeScreen extends React.Component {
             },
             (error) => this.setState({error: true, errorMsg: error.code}),
             {
-                enableHighAccuracy: false,
+                enableHighAccuracy: true,
                 maximumAge: 10000,
                 timeout: 8000
             }
@@ -143,7 +148,7 @@ export default class HomeScreen extends React.Component {
                 }
             }
         }
-        else {
+        else if (type === 'ranking') {
             let pivot = array[end][1];
 
             for (let i = start; i < end; i++) {
@@ -177,25 +182,29 @@ export default class HomeScreen extends React.Component {
 
     // add preferences to ranking
     getRanking(distance, rating, price) {
-        let map = {}
-        let results = [];
+        let results = {};
         let maxPoints = distance.length;
 
-        for (let i = 0; i < distance.length; i++) {
-            results.push([distance[i], 0]);
-            map[distance[i].name] = i;
+        for (let result in distance) {
+            results[distance[result].phone] = [distance[result], 0]
         }
 
-        for (let i = 0; i < distance.length; i++) {
-            results[map[distance[i].name]][1] += maxPoints; 
-            results[map[rating[i].name]][1] +=  maxPoints;
-            results[map[price[i].name]][1] +=  maxPoints;
-            maxPoints -= 1;
+        for (let result in distance) {
+            results[distance[result].phone][1] += maxPoints
+            results[rating[result].phone][1] += maxPoints
+            results[price[result].phone][1] += maxPoints
+            maxPoints -= 1
+        }        
+
+        let output = []
+
+        for (let result in results) {
+            output.push(results[result])
         }
 
-        this.sort(results, 0, results.length-1, "ranking");
-
-        return results;
+        this.sort(output, 0, output.length-1, "ranking");
+        
+        return output;
     }
 
     getFood(businesses) {        
@@ -209,10 +218,16 @@ export default class HomeScreen extends React.Component {
                 price: businesses[business].price === "$"? 1 : businesses[business].price === "$$"? 2 : businesses[business].price === "$$$"? 3 : 4,
                 rating: businesses[business].rating,
                 distance: businesses[business].distance,
+                number: businesses[business].phone,
+                website: businesses[business].url,
+                catergory: businesses[business].categories[0].title,
                 address: businesses[business].location.address1,
+                city: businesses[business].location.city,
                 state: businesses[business].location.state,
                 zip_code: businesses[business].location.zip_code,
-                display_address: businesses[business].location.display_address
+                display_address: businesses[business].location.display_address,
+                latitude: businesses[business].coordinates.latitude,
+                longitude: businesses[business].coordinates.longitude,
             }
 
             storedBusinesses.push(data)
@@ -227,34 +242,53 @@ export default class HomeScreen extends React.Component {
         sortedRating = this.sort(sortedRating, 0, sortedRating.length-1, "rating");
         sortedPrice = this.sort(sortedPrice, 0, sortedPrice.length-1, "price");
 
-
-        // storedBusinesses = this.getRanking(sortedDistance, sortedRating, sortedPrice);
-
-        // console.log(storedBusinesses[0][1]);
         this.setState({businesses: this.getRanking(sortedDistance, sortedRating, sortedPrice).slice(0,5)});
+    }
 
+    handleConfirm() {
+        const lat = this.state.chosen.latitude;
+        const long = this.state.chosen.longitude;
+        const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
+        const latLng = `${lat},${long}`;
+        const label = 'Custom Label';
+        const url = Platform.select({
+            ios: `${scheme}${label}@${latLng}`,
+            android: `${scheme}${latLng}(${label})`
+        });
+
+        Linking.openURL(url); 
     }
 
     render() {
-        let display = this.state.businesses.map(business => {return (
-            <View style={styles.suggestedView}>
+        let display = this.state.businesses.map((business, id) => {return (
+            <TouchableOpacity key={id} style={[styles.suggestedView, {borderColor: this.state.chosen.name === business[0].name? "red" : "black"}]} onPress={() => this.setState({chosen: business[0]})}> 
                 <Text>
                     Name: {business[0].name}
+                </Text>
+                <Text>
+                    Phone Number: {business[0].number}
+                </Text>
+                {/* <Text>
+                    Alias: {business[0].alias}
+                </Text> */}
+                <Text>
+                    Catergory: {business[0].catergory}
                 </Text>
                 <Text>
                     Distance: {business[0].distance}
                 </Text>
                 <Text>
-                    Rating: {business[0].rating} 
+                    Rating: {business[0].rating} stars
                 </Text>
                 <Text>
-                    Price: {business[0].price}
+                    Price: {business[0].price === 1? '$' : business[0].price === 2? '$$' : business[0].price === 3? '$$$' : '$$$$'} 
                 </Text>
                 <Text>
-                    Address: {business[0].display_address}
+                    Address: {business[0].address} {'\n\t\t\t\t\t\t\t\t\t\t'} {business[0].city}, {business[0].state}, {business[0].zip_code}
                 </Text>
-            </View>
+            </TouchableOpacity>
         )})
+
         return (
             <View>
                 <SideBar switch={this.props.switch} timeOfDay={this.state.timeOfDay} search={this.handleSearch} />
@@ -265,51 +299,14 @@ export default class HomeScreen extends React.Component {
                         <Text>
                             resta name, phone numba, pic?, once clicked maybe show a guidance route, mmmm maybe add weather to see if ice cream, soup, etc is suitable for the weather
                         </Text>
-                        <Text>
-                            price? https://api.yelp.com/v3.
-                        </Text>
-                        <Text>
-                            dist?
-                        </Text>
-                        <Text>
-                            rating?
-                        </Text>
-                        <Text>
-                            type of food
-                        </Text>
-                        <Text>
-                            Here's the pick for you today
-                        </Text>
-                    </View>
-                    <View style={styles.suggestedView}>
-                        <Text>
-                            Here's the pick for you today
-                        </Text>
-                    </View>
-                    <View style={styles.suggestedView}>
-                        <Text>
-                            Here's the pick for you today
-                        </Text>
-                    </View> */}
+        */}
                 </ScrollView>
-                <TouchableOpacity style={styles.chooseButton}><Text style={{ color: "white" }}>Choose</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.chooseButton} onPress={() => this.handleConfirm()}><Text style={{ color: "white" }}>Choose</Text></TouchableOpacity>
                 {this.state.error && <Text style={styles.errorText}>{this.state.errorMsg}</Text>}
             </View>
         )
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

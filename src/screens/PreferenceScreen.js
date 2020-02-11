@@ -57,103 +57,103 @@ class PreferenceList extends React.Component {
                     id: 0,
                     checked: false,
                     color: "grey",
-                    text: "Pizza",
+                    text: "pizza",
                 },
                 {
                     id: 1,
                     checked: false,
                     color: "grey",
-                    text: "Chinese",
+                    text: "chinese",
                 },
                 {
                     id: 2,
                     checked: false,
                     color: "grey",
-                    text: "Mexican",
+                    text: "mexican",
                 },
                 {
                     id: 3,
                     checked: false,
                     color: "grey",
-                    text: "Thai",
+                    text: "thai",
                 },
                 {
                     id: 4,
                     checked: false,
                     color: "grey",
-                    text: "Burgers",
+                    text: "burgers",
                 },
                 {
                     id: 5,
                     checked: false,
                     color: "grey",
-                    text: "Italian",
+                    text: "italian",
                 },
                 {
                     id: 6,
                     checked: false,
                     color: "grey",
-                    text: "Seafood",
+                    text: "seafood",
                 },
                 {
                     id: 7,
                     checked: false,
                     color: "grey",
-                    text: "Steakhouses",
+                    text: "steakhouses",
                 },
                 {
                     id: 8,
                     checked: false,
                     color: "grey",
-                    text: "Korean",
+                    text: "korean",
                 },
                 {
                     id: 9,
                     checked: false,
                     color: "grey",
-                    text: "Japanese",
+                    text: "japanese",
                 },
                 {
                     id: 10,
                     checked: false,
                     color: "grey",
-                    text: "Breakfast",
+                    text: "breakfast",
                 },
                 {
                     id: 11,
                     checked: false,
                     color: "grey",
-                    text: "Sandwiches",
+                    text: "sandwiches",
                 },
                 {
                     id: 12,
                     checked: false,
                     color: "grey",
-                    text: "Vietnamese",
+                    text: "vietnamese",
                 },
                 {
                     id: 13,
                     checked: false,
                     color: "grey",
-                    text: "Vegetarian",
+                    text: "vegetarian",
                 },
                 {
                     id: 14,
                     checked: false,
                     color: "grey",
-                    text: "Sushi Bars",
+                    text: "sushi bars",
                 },
                 {
                     id: 15,
                     checked: false,
                     color: "grey",
-                    text: "American",
+                    text: "american",
                 },
                 {
                     id: 16,
                     checked: false,
                     color: "grey",
-                    text: "Vegan",
+                    text: "vegan",
                 },
             ]
         }
@@ -185,9 +185,11 @@ class PreferenceList extends React.Component {
     }
 
     render() {
-        let checkItems = this.state.checkBoxes.map((item) => {return(
+        let checkItems = this.state.checkBoxes.map((item) => {
+            let text = item.text[0].toUpperCase() + item.text.substring(1)
+            return(
             <View key={item.id} style={styles.checkBox}>
-                <Button title={item.text} color={item.color} onPress={() => this.handleCheck(item.id)}/>
+                <Button title={text} color={item.color} onPress={() => this.handleCheck(item.id)}/>
                 {/* <TouchableOpacity key={item.id}  onPress={() => this.handleCheck(item.id)}><Text style={styles.buttonText}>{item.text}</Text></TouchableOpacity> */}
             </View>
         )})
