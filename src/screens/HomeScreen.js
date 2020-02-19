@@ -245,7 +245,13 @@ export default class HomeScreen extends React.Component {
         this.setState({businesses: this.getRanking(sortedDistance, sortedRating, sortedPrice).slice(0,5)});
     }
 
+    // once confirmed, add all the details to the database 
+    // maybe using updated detail, fix the chosen algorithmn
     handleConfirm() {
+        if (this.state.chosen === "") {
+            return 
+        }
+
         const lat = this.state.chosen.latitude;
         const long = this.state.chosen.longitude;
         const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
@@ -261,7 +267,7 @@ export default class HomeScreen extends React.Component {
 
     render() {
         let display = this.state.businesses.map((business, id) => {return (
-            <TouchableOpacity key={id} style={[styles.suggestedView, {borderColor: this.state.chosen.name === business[0].name? "red" : "black"}]} onPress={() => this.setState({chosen: business[0]})}> 
+            <TouchableOpacity key={id} style={[styles.suggestedView, {borderColor: (this.state.chosen.name === business[0].name && this.state.chosen.address === business[0].address)? "red" : "black"}]} onPress={() => this.setState({chosen: business[0]})}> 
                 <Text>
                     Name: {business[0].name}
                 </Text>
@@ -275,7 +281,7 @@ export default class HomeScreen extends React.Component {
                     Catergory: {business[0].catergory}
                 </Text>
                 <Text>
-                    Distance: {business[0].distance}
+                    Distance: {(Math.round(business[0].distance * 100) / 100000).toFixed(2)} miles
                 </Text>
                 <Text>
                     Rating: {business[0].rating} stars
@@ -284,7 +290,16 @@ export default class HomeScreen extends React.Component {
                     Price: {business[0].price === 1? '$' : business[0].price === 2? '$$' : business[0].price === 3? '$$$' : '$$$$'} 
                 </Text>
                 <Text>
-                    Address: {business[0].address} {'\n\t\t\t\t\t\t\t\t\t\t'} {business[0].city}, {business[0].state}, {business[0].zip_code}
+                    Address: {business[0].address} 
+                </Text>
+                <Text>
+                    City: {business[0].city}
+                </Text>
+                <Text>
+                    State: {business[0].state}
+                </Text>
+                <Text>
+                    Zip Code: {business[0].zip_code}
                 </Text>
             </TouchableOpacity>
         )})

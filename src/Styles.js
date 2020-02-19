@@ -54,14 +54,15 @@ export default StyleSheet.create({
     },
     suggestedView: {
         width: "90%", 
-        // height: 300, 
         backgroundColor: "white", 
         alignSelf: "center", 
         marginTop: 10,
         borderStyle: "solid",
         borderWidth: 2,
-        // borderColor: "black",
         paddingLeft: 10,
+        paddingRight: 10,
+        paddingTop: 5,
+        paddingBottom: 5,
         borderRadius: 5,
     },
     chooseButton: {

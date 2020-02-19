@@ -126,10 +126,10 @@ class SideBarMenu extends React.Component {
                 </View>
                 <TouchableOpacity style={styles.searchButton} onPress={this.search}><Text style={{color: "white"}}>Search</Text></TouchableOpacity>
                 <View style={styles.distanceBox}>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 10000 && styles.distanceChosen]} onPress={() => this.changeDistance(10000)}><Text>10 km</Text></TouchableOpacity>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 20000 && styles.distanceChosen]} onPress={() => this.changeDistance(20000)}><Text>20 km</Text></TouchableOpacity>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 30000 && styles.distanceChosen]} onPress={() => this.changeDistance(30000)}><Text>30 km</Text></TouchableOpacity>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 40000 && styles.distanceChosen]} onPress={() => this.changeDistance(40000)}><Text>40 km</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 10000 && styles.distanceChosen]} onPress={() => this.changeDistance(10000)}><Text>10 mi</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 20000 && styles.distanceChosen]} onPress={() => this.changeDistance(20000)}><Text>20 mi</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 30000 && styles.distanceChosen]} onPress={() => this.changeDistance(30000)}><Text>30 mi</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 40000 && styles.distanceChosen]} onPress={() => this.changeDistance(40000)}><Text>40 mi</Text></TouchableOpacity>
                 </View>
                 <View style={styles.sideBarOptions}>
                     <ProfileSettingView/>
