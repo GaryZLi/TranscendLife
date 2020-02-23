@@ -12,12 +12,13 @@ export default class HomeScreen extends React.Component {
         super(props);
 
         this.state = {
+            username: '',
             hour: 0,
             mealText: "",
             userData: {},
+            pref: [],
             businesses: [],
             chosen: "",
-            username: "",
             error: false,
             errorMsg: "",
         }
@@ -27,21 +28,32 @@ export default class HomeScreen extends React.Component {
         this.getHour = this.getHour.bind(this);
         this.getFood = this.getFood.bind(this);
         this.handleConfirm = this.handleConfirm.bind(this);
+        this.handleSearch = this.handleSearch.bind(this);
+
+        this.config = {
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+            },
+            params: {}
+        }
     }
 
     componentDidMount() {
-        // this.interval = setInterval(() => this.getHour(), 1000);
-
-
         this.getHour()
         this.getUserInfo();
     }
 
-    // componentWillUnmount() {
-    //     clearInterval(this.interval);
-    // }
+    notIn(arr, target) {
+        for (let val in arr) {
+            if (arr[val] === target) {
+                return false;
+            }
+        }
 
-    async getUserInfo() {
+        return true;
+    }
+
+    getUserInfo() {
         let username = firebase.auth().currentUser.email.replace(/\./g, "dot").replace(/\-/g, "dash")
         this.setState({username: username})
 
@@ -49,16 +61,38 @@ export default class HomeScreen extends React.Component {
         let ref = firebase.database().ref("Users/" + username);
         ref.once("value")
         .then(results => {
-            this.setState({userData: results.child("recommend")})
+            let pref = results.child("preferences").toJSON();
+            let prefVal = [];
+            let max = 0;
 
-            let pref = results.child("preferences").toJSON()
-            let total = Object.keys(pref).length
+            let data = results.child('history').toJSON();
 
-            for (let i = 0; i < total; i++) {
-                preferences =  preferences + pref[i] + ", "
+            for (let i in data) {
+                if (data[i] > max) {
+                    max = data[i];
+                }
             }
 
-            this.defineParameters(preferences);
+            for (let val in pref) {
+                preferences =  preferences + pref[val] + ", ";
+                prefVal.push(pref[val]);
+                data[pref[val]] += max;
+            }
+            
+            this.setState({userData: data, pref: prefVal});
+
+            data = Object.keys(this.state.userData).map(item => [item, this.state.userData[item]]);
+            this.sort(data, 0, data.length-1, 'ranking');
+
+            for (let i = 0; i < 5; i++) {
+                if (this.notIn(prefVal, data[i][0])) {
+                    preferences =  preferences + data[i][0] + ", ";
+                }
+            }
+
+            preferences = 'burgers'
+            
+            this.defineParameters({categories: preferences, limit: 50}, 10);
         })
         .catch(error => this.setState({error: true, errorMsg: error.code}))
     }
@@ -79,24 +113,18 @@ export default class HomeScreen extends React.Component {
         this.setState({mealText: time})
     }
 
-    defineParameters(preferences) {
+    defineParameters(parameter, limit) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                let config = {
-                    headers: {
-                        "Authorization": `Bearer ${apiKey}`,
-                    },
-                    params: {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude,
-                        limit: 50,
-                        open_now: true,
-                        categories: preferences
-                    }
+                this.config['params'] = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    open_now: true,
+                    ...parameter
                 }
 
-                axios.get("https://api.yelp.com/v3/businesses/search", config)
-                .then((results) => this.getFood(results.data.businesses)) 
+                axios.get("https://api.yelp.com/v3/businesses/search", this.config)
+                .then((results) => this.getFood(results.data.businesses, limit)) 
                 .catch((error) => this.setState({error: true, errorMsg: error.code}))
             },
             (error) => this.setState({error: true, errorMsg: error.code}),
@@ -106,6 +134,11 @@ export default class HomeScreen extends React.Component {
                 timeout: 8000
             }
         )
+    }
+
+    handleSearch(search, distance, limit) {
+        this.setState(() => ({mealText: "User Custom Search"}))
+        return this.defineParameters({term: search, radius: distance}, limit)
     }
 
     partition(array, start, end, type) {
@@ -182,6 +215,9 @@ export default class HomeScreen extends React.Component {
 
     // add preferences to ranking
     getRanking(distance, rating, price) {
+        let data = Object.keys(this.state.userData).map(item => [item, this.state.userData[item]])
+        this.sort(data, 0, data.length-1, 'ranking')
+        
         let results = {};
         let maxPoints = distance.length;
 
@@ -196,6 +232,8 @@ export default class HomeScreen extends React.Component {
             maxPoints -= 1
         }        
 
+
+        
         let output = []
 
         for (let result in results) {
@@ -207,12 +245,13 @@ export default class HomeScreen extends React.Component {
         return output;
     }
 
-    getFood(businesses) {        
+    getFood(businesses, limit) {        
         let storedBusinesses = []
         let data = {}
 
         for (let business in businesses) {
             data = {
+                id: businesses[business].id,
                 name: businesses[business].name,
                 phone: businesses[business].phone,
                 price: businesses[business].price === "$"? 1 : businesses[business].price === "$$"? 2 : businesses[business].price === "$$$"? 3 : 4,
@@ -221,6 +260,7 @@ export default class HomeScreen extends React.Component {
                 number: businesses[business].phone,
                 website: businesses[business].url,
                 catergory: businesses[business].categories[0].title,
+                alias: businesses[business].categories,
                 address: businesses[business].location.address1,
                 city: businesses[business].location.city,
                 state: businesses[business].location.state,
@@ -242,7 +282,7 @@ export default class HomeScreen extends React.Component {
         sortedRating = this.sort(sortedRating, 0, sortedRating.length-1, "rating");
         sortedPrice = this.sort(sortedPrice, 0, sortedPrice.length-1, "price");
 
-        this.setState({businesses: this.getRanking(sortedDistance, sortedRating, sortedPrice).slice(0,5)});
+        this.setState({businesses: this.getRanking(sortedDistance, sortedRating, sortedPrice).slice(0, limit)});
     }
 
     // once confirmed, add all the details to the database 
@@ -251,6 +291,21 @@ export default class HomeScreen extends React.Component {
         if (this.state.chosen === "") {
             return 
         }
+
+        axios.get('https://api.yelp.com/v3/businesses/' + this.state.chosen['id'], this.config)
+        .then(result => {
+            let categories = result['data'].categories;
+            let data = this.state.userData;
+
+            const ref = firebase.database().ref('Users/' + this.state.username + '/history');
+            
+            for (let catergory in categories) {
+                data[categories[catergory]['alias']] += 1
+                ref.update({
+                    [categories[catergory]['alias']]: data[categories[catergory]['alias']]
+                })
+            }
+        })
 
         const lat = this.state.chosen.latitude;
         const long = this.state.chosen.longitude;
@@ -274,9 +329,6 @@ export default class HomeScreen extends React.Component {
                 <Text>
                     Phone Number: {business[0].number}
                 </Text>
-                {/* <Text>
-                    Alias: {business[0].alias}
-                </Text> */}
                 <Text>
                     Catergory: {business[0].catergory}
                 </Text>

@@ -26,6 +26,7 @@ export default class SideBar extends React.Component {
         .once("value")
         .then(result => result.toJSON())
         .then(name => this.setState({firstName: name.firstName}))
+
     }
 
     componentWillUnmount() {
@@ -52,10 +53,6 @@ export default class SideBar extends React.Component {
         this.setState(prev => ({opened: !prev.opened}))
     }
 
-    // distance(radius) {
-    //     this.setState({})
-    // }
-
     render() {
         return (
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -68,8 +65,7 @@ export default class SideBar extends React.Component {
                     </TouchableOpacity>
                     <Text style={styles.greetingText}>Good {this.state.timeOfDay}, {this.state.firstName} {this.state.lastName} </Text>
                 </View>
-                {this.state.opened && <SideBarMenu switch={this.props.switch} search={this.props.search}/>}
-                {/* {this.state.opened && <SideBarMenu switch={this.props.switch} search={this.props.search} distance={this.distance}/>} */}
+                {this.state.opened && <SideBarMenu switch={this.props.switch} search={this.props.search} close={() => this.setState(() => ({opened: false}))}/>}
             </View>
             </TouchableWithoutFeedback>
         )
@@ -84,10 +80,9 @@ class SideBarMenu extends React.Component {
             user: "",
             searchQuery: "",
             chosen: 0,
-            // profileSetting: false,
-            // preferences: false,
             error: false,
             errorMsg: "",
+            limit: ''
         }
 
         this.search = this.search.bind(this);
@@ -96,19 +91,34 @@ class SideBarMenu extends React.Component {
 
     componentDidMount() {
         let username = firebase.auth().currentUser.email.replace(/\./g, "dot").replace(/\-/g, "dash");
+
+        const ref = firebase.database().ref("Users/" + username)
+        ref.once('value')
+        .then(result => this.setState(() => ({chosen: result.child('distance').toJSON().radius})))
+
         this.setState({user: username});
     }
 
     search() {
-        this.props.search(this.state.searchQuery, this.state.chosen)
+        if (this.state.searchQuery === '') {
+            return this.setState({error: true, errorMsg: 'Nothing to search!'})
+        }
+
+        if (this.state.limit === '') {
+            return this.setState({error: true, errorMsg: 'Please enter a number for the results!'})
+        }
+
+        const limit = parseInt(this.state.limit)
+        
+        this.props.close();
+        this.props.search(this.state.searchQuery, this.state.chosen, limit);
     }
 
     changeDistance(distance) {
         this.setState(({chosen: distance}))
 
-        const ref = firebase.database().ref("Users/" + this.state.user + "/distance/")        
-        ref.update({radius: distance})
-        // .then(this.props.distance(distance))
+        const ref = firebase.database().ref("Users/" + this.state.user)        
+        ref.update({distance: distance})
         .catch(error => this.setState({error: true, errorMsg: error.code}));
     }
 
@@ -122,14 +132,17 @@ class SideBarMenu extends React.Component {
         return (
             <View>
                 <View style={styles.searchBar}>
-                    <TextInput placeholder="Enter food to search for" style={styles.searchBarText} value={this.state.searchQuery} onChangeText={text => this.setState({searchQuery: text})}></TextInput>
+                    <TextInput placeholder="Enter food to search for" style={styles.searchBarText} value={this.state.searchQuery} onChangeText={text => this.setState({searchQuery: text})} onSubmitEditing={() => this.search()} ref={input => {this.searchBar = input}}></TextInput>
                 </View>
-                <TouchableOpacity style={styles.searchButton} onPress={this.search}><Text style={{color: "white"}}>Search</Text></TouchableOpacity>
+                <View style={styles.limitField}>
+                    <TextInput placeholder='number of results' style={styles.limitInput} value={this.state.limit} keyboardType={"number-pad"} onChangeText={text => this.setState({limit: text})} onSubmitEditing={() => this.search()}/>
+                </View>
+                <TouchableOpacity style={styles.searchButton} onPress={() => this.search()}><Text style={{color: "white"}}>Search</Text></TouchableOpacity>
                 <View style={styles.distanceBox}>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 10000 && styles.distanceChosen]} onPress={() => this.changeDistance(10000)}><Text>10 mi</Text></TouchableOpacity>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 20000 && styles.distanceChosen]} onPress={() => this.changeDistance(20000)}><Text>20 mi</Text></TouchableOpacity>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 30000 && styles.distanceChosen]} onPress={() => this.changeDistance(30000)}><Text>30 mi</Text></TouchableOpacity>
-                    <TouchableOpacity style={[styles.distanceTextBox, this.state.chosen === 40000 && styles.distanceChosen]} onPress={() => this.changeDistance(40000)}><Text>40 mi</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, {borderColor: this.state.chosen === 10000? 'red' : 'transparent'}]} onPress={() => this.changeDistance(10000)}><Text>10 mi</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, {borderColor: this.state.chosen === 20000? 'red' : 'transparent'}]} onPress={() => this.changeDistance(20000)}><Text>20 mi</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, {borderColor: this.state.chosen === 30000? 'red' : 'transparent'}]} onPress={() => this.changeDistance(30000)}><Text>30 mi</Text></TouchableOpacity>
+                    <TouchableOpacity style={[styles.distanceTextBox, {borderColor: this.state.chosen === 40000? 'red' : 'transparent'}]} onPress={() => this.changeDistance(40000)}><Text>40 mi</Text></TouchableOpacity>
                 </View>
                 <View style={styles.sideBarOptions}>
                     <ProfileSettingView/>

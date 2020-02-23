@@ -110,6 +110,19 @@ export default StyleSheet.create({
         backgroundColor: "white", 
         paddingLeft: 10,
     },
+    limitField: {
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10
+    },
+    limitInput: {
+        width: '30%',
+        backgroundColor: 'white',
+        paddingLeft: 7
+    },
     searchButton: {
         alignSelf: "center",
         backgroundColor: "#33adff",
@@ -139,13 +152,11 @@ export default StyleSheet.create({
         paddingBottom: 5,
         paddingLeft: 10,
         paddingRight: 10,
-        justifyContent: "center"
-    },
-    distanceChosen: {
+        justifyContent: "center",
         borderWidth: 2,
-        borderColor: "red",
         borderStyle: "solid",
-    },  
+
+    },
     sideBarOptionTexts: {
         color: "white",
         fontSize: 30,

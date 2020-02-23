@@ -58,11 +58,13 @@ export default class SignInScreen extends React.Component {
         this.state = {
             email: "",
             password: "",
+            shown: '',
             screen: "PreferenceScreen",
             error: false,
             errorMsg: "",
         }
         
+        this.handleText = this.handleText.bind(this);
         this.handleSignIn = this.handleSignIn.bind(this);
         this.handleSignUp = this.handleSignUp.bind(this);
         this.pressed = false;
@@ -114,8 +116,6 @@ export default class SignInScreen extends React.Component {
             return 
         }
 
-        // this.pressed = false;
-
         // change to the appropriate screen
         return this.props.switch(this.state.screen);     
     }
@@ -129,6 +129,14 @@ export default class SignInScreen extends React.Component {
     handleSignUp() {
         this.props.switch("SignUp")
     }
+
+    handleText({nativeEvent}) {
+        if (nativeEvent.key === 'Backspace') {
+            return this.setState(prev => ({shown: prev.shown.slice(0, prev.shown.length - 1), password: prev.password.slice(0, prev.password.length - 1)}))
+        }
+
+        this.setState(prev => ({shown: prev.shown + '*', password: prev.password + nativeEvent.key}))
+    }
     
     render() {
         return (
@@ -136,7 +144,7 @@ export default class SignInScreen extends React.Component {
                 <View style={{ alignItems: 'center' }}>
                     <Image source={logo} style={{width: "50%"}}/>
                     <TextInput style={styles.inputBoxStyle} placeholder="email" placeholderTextColor="#706f6e" value={this.state.email} onChangeText={(text) => this.setState({email: text})} onSubmitEditing={() => this.passwordInput.focus()}/>
-                    <TextInput style={styles.inputBoxStyle} placeholder="password" placeholderTextColor="#706f6e" value={this.state.password} onChangeText={(text) => this.setState({password: text})} ref={input => {this.passwordInput = input}} onSubmitEditing={() => this.handleSignIn()} autoCapitalize="none"/>
+                    <TextInput style={styles.inputBoxStyle} placeholder="password" placeholderTextColor="#706f6e" value={this.state.shown} onKeyPress={(key) => this.handleText(key)} ref={input => {this.passwordInput = input}} onSubmitEditing={() => this.handleSignIn()} autoCapitalize="none"/>
                     <TouchableOpacity style={styles.button} onPress={() => this.handleSignIn()}><Text style={styles.buttonText}>Login</Text></TouchableOpacity>
                     {this.state.error && <Text style={styles.errorText}>{this.state.errorMsg}</Text>}
                     <Text style={{ marginTop: 30, marginBottom: 30 }} onPress={this.loc}>
