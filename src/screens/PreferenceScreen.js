@@ -260,7 +260,7 @@ class PreferenceList extends React.Component {
                 'Water Stores': ['waterstores', 'gray'],
                 'Wine Tasting Room': ['winetastingroom', 'gray'],
                 'Wineries': ['wineries', 'gray'],
-                'Wraps': ['wraps', 'gray']
+                'Wraps': ['wraps', 'gray']  
             },
             data: {}
         }

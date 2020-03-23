@@ -89,10 +89,8 @@ export default class HomeScreen extends React.Component {
                     preferences =  preferences + data[i][0] + ", ";
                 }
             }
-
-            preferences = 'burgers'
             
-            this.defineParameters({categories: preferences, limit: 50}, 10);
+            this.defineParameters({categories: preferences, limit: 50});
         })
         .catch(error => this.setState({error: true, errorMsg: error.code}))
     }
@@ -113,7 +111,7 @@ export default class HomeScreen extends React.Component {
         this.setState({mealText: time})
     }
 
-    defineParameters(parameter, limit) {
+    defineParameters(parameter) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 this.config['params'] = {
@@ -124,7 +122,7 @@ export default class HomeScreen extends React.Component {
                 }
 
                 axios.get("https://api.yelp.com/v3/businesses/search", this.config)
-                .then((results) => this.getFood(results.data.businesses, limit)) 
+                .then((results) => this.getFood(results.data.businesses)) 
                 .catch((error) => this.setState({error: true, errorMsg: error.code}))
             },
             (error) => this.setState({error: true, errorMsg: error.code}),
@@ -136,9 +134,9 @@ export default class HomeScreen extends React.Component {
         )
     }
 
-    handleSearch(search, distance, limit) {
+    handleSearch(search, distance) {
         this.setState(() => ({mealText: "User Custom Search"}))
-        return this.defineParameters({term: search, radius: distance}, limit)
+        return this.defineParameters({term: search, radius: distance})
     }
 
     partition(array, start, end, type) {
@@ -215,9 +213,6 @@ export default class HomeScreen extends React.Component {
 
     // add preferences to ranking
     getRanking(distance, rating, price) {
-        let data = Object.keys(this.state.userData).map(item => [item, this.state.userData[item]])
-        this.sort(data, 0, data.length-1, 'ranking')
-        
         let results = {};
         let maxPoints = distance.length;
 
@@ -231,21 +226,26 @@ export default class HomeScreen extends React.Component {
             results[price[result].phone][1] += maxPoints
             maxPoints -= 1
         }        
-
-
         
-        let output = []
+        let outputs = []
 
         for (let result in results) {
-            output.push(results[result])
+            outputs.push(results[result])
         }
 
-        this.sort(output, 0, output.length-1, "ranking");
+        for (let output in outputs) {
+            for (let alias in outputs[output][0]['alias']) {
+                outputs[output][1] += this.state.userData[outputs[output][0]['alias'][alias].alias];
+            }
+        }
+
+        this.sort(outputs, 0, outputs.length-1, "ranking");
         
-        return output;
+        // return the top 10 outputs
+        return outputs.slice(0, 10);
     }
 
-    getFood(businesses, limit) {        
+    getFood(businesses) {        
         let storedBusinesses = []
         let data = {}
 
@@ -282,7 +282,7 @@ export default class HomeScreen extends React.Component {
         sortedRating = this.sort(sortedRating, 0, sortedRating.length-1, "rating");
         sortedPrice = this.sort(sortedPrice, 0, sortedPrice.length-1, "price");
 
-        this.setState({businesses: this.getRanking(sortedDistance, sortedRating, sortedPrice).slice(0, limit)});
+        this.setState({businesses: this.getRanking(sortedDistance, sortedRating, sortedPrice)});
     }
 
     // once confirmed, add all the details to the database 
